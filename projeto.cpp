@@ -16,49 +16,66 @@ vector<bool> comprou;
 int menor = 10000000, maior = -1;
 vector<vector<int>> dp;
 int prof = 0;
-
+vector<int> aux;
+int contador = 0;
 void calcula(int valor, int k, int contamenores, int Profit, int compra, vector<int> &Comb)
 {
 
     int prox = k + 1;
 
-    if (prof < Profit)
+    if (k == Vi.size() && valor == 0)
     {
+        int g = 0;
+        for (int i = 0; i < Comb.size(); i++)
+        {
 
-        prof = Profit;
-    }
-    if (k == Vi.size())
-    {
-        prof += (-3 * (compra)) * R;
+            g += (-Comb[i] * Vi[i]);
+        }
+
+        int Money = g + (-K * (compra)) * R;
+
+        if (prof == Money)
+        {
+            aux = Comb;
+            contador++;
+        }
+        if (prof < Money)
+        {
+            aux = Comb;
+            prof = Money;
+            contador = 1;
+        }
         return;
     }
-    for (int i = 0; i < Comb.size(); i++)
-    {
-        printf("%d ", Comb[i]);
-    }
-    printf("\n\n");
-    //  printf("VALOR %d com  e V %d e contamenores %d profit é %d\n", k, Vi[k], contamenores, Profit);
+
     if (Vi[k] == menor)
     {
 
-        if (valor < 3 && valor > -3)
+        if (valor <= K && valor >= -K)
         {
+
             if (contamenores != 1)
             {
-                for (int i = 0; i < contamenores; i++)
+
+                for (int i = 0; i <= contamenores; i++)
                 {
                     Profit += Vi[k] * (-i);
-                    Comb[k] = i;
-                    int next = contamenores - i;
-                    // printf("%d  _ %d\n", k, i);
-                    calcula(valor + i, prox, next, Profit, compra, Comb);
+                    if (i != 0 && (valor + i) >= -K && (valor + i) <= -K)
+                    {
+                        Comb[k] = i;
+                        calcula(valor + i, prox, contamenores - 1, Profit, compra, Comb);
+                    }
+                    else
+                    {
+                        Comb[k] = i;
+                        calcula(valor + i, prox, contamenores, Profit, compra, Comb);
+                    }
                 }
             }
             else
             {
-                valor = 0;
-                Comb[k] = 3;
-                calcula(valor + 1, prox, 0, Profit, compra, Comb);
+                Comb[k] = K;
+                calcula(valor + K, prox, 0, Profit, compra, Comb);
             }
         }
         else
@@ -74,13 +91,17 @@ void calcula(int valor, int k, int contamenores, int Profit, int compra, vector<
             soma += Comb[i];
         }
 
-        if (soma <= 3 && soma >= -3)
+        if (valor <= K && valor >= -K)
         {
 
             Profit += soma * Vi[k];
             Comb[k] = -soma;
             valor -= soma;
-            calcula(valor + soma, prox, contamenores, Profit, compra + 1, Comb);
+            calcula(valor, prox, contamenores, Profit, compra + 1, Comb);
+        }
+        else
+        {
+            return;
         }
     }
 }
@@ -111,17 +132,29 @@ int BestProfitCase1()
     int profit = 0;
     if (contamenores == 1)
     {
-        profit = (-K) * menor + K * maior - 3 * R;
+        for (int i = 0; i < Vi.size(); i++)
+        {
+            if (Vi[i] == menor)
+            {
+                aux[i] = K;
+            }
+            else if (Vi[i] == maior)
+            {
+                aux[i] = -K;
+            }
+        }
+        contador++;
+
+        profit = (-K) * menor + K * maior - K * R;
+
+        return profit;
     }
     else
     {
         vector<int> Comb = vector<int>(D, -2);
         calcula(0, 0, contamenores, 0, 0, Comb);
-        printf("%d\n", prof);
+        return prof;
     }
-
-    printf("ContaMenores %d\n", contamenores);
-    return profit;
 }
 
 int main()
@@ -132,13 +165,37 @@ int main()
     {
         comprou = vector<bool>(D, false);
         Vi = vector<int>(D, 0);
-
+        aux = vector<int>(D, 0);
         dp = vector<vector<int>>(D, vector<int>(D, 0));
         for (int i = 0; i < D; i++)
         {
             cin >> valor;
             Vi[i] = valor;
         }
-        printf("%d\n", BestProfitCase1());
+        contador = 1;
+        int p = BestProfitCase1();
+        if (tipo == 1)
+        {
+            printf("%d\n", p);
+        }
+        if (tipo == 2)
+        {
+            printf("%d\n", p);
+            for (int i = 0; i < aux.size(); i++)
+            {
+                if (i == aux.size() - 1)
+                {
+                    printf("%d\n", aux[i]);
+                }
+                else
+                {
+                    printf("%d ", aux[i]);
+                }
+            }
+        }
+        if (tipo == 3)
+        {
+            printf("%d %d\n", p, contador);
+        }
     }
 }
