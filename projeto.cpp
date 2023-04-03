@@ -1,201 +1,84 @@
-#include <stdio.h>
-#include <vector>
 #include <iostream>
+#include <vector>
+
 using namespace std;
 
-vector<int> Vi;
-int N;
-int D;
-int K;
-int R;
-
-int numeroVezes;
-int tipo;
-int valor;
-vector<bool> comprou;
-int menor = 10000000, maior = -1;
-vector<vector<int>> dp;
-int prof = 0;
-vector<int> aux;
-int contador = 0;
-void calcula(int valor, int k, int contamenores, int Profit, int compra, vector<int> &Comb)
+// VERSAO QUE NAO DA ERRO DE EXECUCAO 2 pontos
+int maxProfit(const vector<int> &prices, int D, int K, int R)
 {
+    vector<vector<int>> after(2, vector<int>(K + 1, 0));
+    vector<vector<int>> cur(2, vector<int>(K + 1, 0));
 
-    int prox = k + 1;
-
-    if (k == Vi.size() && valor == 0)
+    for (int ind = D - 1; ind >= 0; ind--)
     {
-        int g = 0;
-        for (int i = 0; i < Comb.size(); i++)
+        for (int buy = 0; buy <= 1; buy++)
         {
-
-            g += (-Comb[i] * Vi[i]);
-        }
-
-        int Money = g + (-K * (compra)) * R;
-
-        if (prof == Money)
-        {
-            aux = Comb;
-            contador++;
-        }
-        if (prof < Money)
-        {
-            aux = Comb;
-            prof = Money;
-            contador = 1;
-        }
-        return;
-    }
-
-    if (Vi[k] == menor)
-    {
-
-        if (valor <= K && valor >= -K)
-        {
-
-            if (contamenores != 1)
+            for (int cap = 1; cap <= K; cap++)
             {
-
-                for (int i = 0; i <= contamenores; i++)
+                if (buy == 1)
                 {
-                    Profit += Vi[k] * (-i);
-                    if (i != 0 && (valor + i) >= -K && (valor + i) <= -K)
-                    {
-                        Comb[k] = i;
-                        calcula(valor + i, prox, contamenores - 1, Profit, compra, Comb);
-                    }
-                    else
-                    {
-                        Comb[k] = i;
-                        calcula(valor + i, prox, contamenores, Profit, compra, Comb);
-                    }
-                }
-            }
-            else
-            {
-                Comb[k] = K;
-                calcula(valor + K, prox, 0, Profit, compra, Comb);
-            }
-        }
-        else
-        {
-            Comb[k] = 0;
-        }
-    }
-    else
-    {
-        int soma = 0;
-        for (int i = 0; i < k; i++)
-        {
-            soma += Comb[i];
-        }
-
-        if (valor <= K && valor >= -K)
-        {
-
-            Profit += soma * Vi[k];
-            Comb[k] = -soma;
-            valor -= soma;
-            calcula(valor, prox, contamenores, Profit, compra + 1, Comb);
-        }
-        else
-        {
-            return;
-        }
-    }
-}
-
-// funciona quando so existe um menor e um maior.
-int BestProfitCase1()
-{
-
-    int contador = 0;
-    int contamenores = 1;
-    for (int i = 0; i < D; i++)
-    {
-        if (Vi[i] == menor)
-        {
-            contamenores++;
-        }
-        if (Vi[i] < menor)
-        {
-            menor = Vi[i];
-        }
-
-        if (Vi[i] > maior)
-        {
-            // contador++;
-            maior = Vi[i];
-        }
-    }
-    int profit = 0;
-    if (contamenores == 1)
-    {
-        for (int i = 0; i < Vi.size(); i++)
-        {
-            if (Vi[i] == menor)
-            {
-                aux[i] = K;
-            }
-            else if (Vi[i] == maior)
-            {
-                aux[i] = -K;
-            }
-        }
-        contador++;
-
-        profit = (-K) * menor + K * maior - K * R;
-
-        return profit;
-    }
-    else
-    {
-        vector<int> Comb = vector<int>(D, -2);
-        calcula(0, 0, contamenores, 0, 0, Comb);
-        return prof;
-    }
-}
-
-int main()
-{
-    cin >> tipo;
-    cin >> N >> D >> K >> R;
-    while (N--)
-    {
-        comprou = vector<bool>(D, false);
-        Vi = vector<int>(D, 0);
-        aux = vector<int>(D, 0);
-        dp = vector<vector<int>>(D, vector<int>(D, 0));
-        for (int i = 0; i < D; i++)
-        {
-            cin >> valor;
-            Vi[i] = valor;
-        }
-        contador = 1;
-        int p = BestProfitCase1();
-        if (tipo == 1)
-        {
-            printf("%d\n", p);
-        }
-        if (tipo == 2)
-        {
-            printf("%d\n", p);
-            for (int i = 0; i < aux.size(); i++)
-            {
-                if (i == aux.size() - 1)
-                {
-                    printf("%d\n", aux[i]);
+                    cur[buy][cap] = max(-prices[ind] * cap + after[0][cap], 0 + after[1][cap]);
+                    cur[buy][cap] -= R;
                 }
                 else
                 {
-                    printf("%d ", aux[i]);
+                    cur[buy][cap] = max(prices[ind] * cap + after[1][cap - 1], 0 + after[0][cap]);
                 }
             }
         }
-        if (tipo == 3)
+        after = cur;
+    }
+
+    return after[1][K];
+}
+/* FUNCAO QUE DA ERRO DE EXECUCAO
+int maxProfit(const vector<int> &prices, int D, int K, int R)
+{
+    vector<vector<vector<int>>> dp(D + 1, vector<vector<int>>(2, vector<int>(4, 0)));
+
+    for (int ind = D - 1; ind >= 0; ind--)
+    {
+        for (int buy = 0; buy <= 1; buy++)
         {
-            printf("%d %d\n", p, contador);
+            for (int cap = 1; cap <= K; cap++)
+            {
+                if (buy == 1)
+                {
+
+                    dp[ind][buy][cap] = max(-prices[ind] * cap + dp[ind + 1][0][cap], 0 + dp[ind + 1][1][cap]);
+                    dp[ind][buy][cap] -= R;
+                }
+                else
+                {
+
+                    dp[ind][buy][cap] = max(prices[ind] * cap + dp[ind + 1][1][cap - 1], 0 + dp[ind + 1][0][cap]);
+                }
+            }
         }
     }
+
+    return dp[0][1][3];
+} */
+
+int main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int tipo, N, D, K, R;
+    cin >> tipo >> N;
+    cin >> D >> K >> R;
+    while (N--)
+    {
+
+        vector<int> prices(D, 0);
+        for (int i = 0; i < D; i++)
+        {
+            cin >> prices[i];
+        }
+
+        cout << maxProfit(prices, D, K, R) << "\n";
+    }
+
+    return 0;
 }
