@@ -3,7 +3,7 @@
 
 using namespace std;
 int K = 0, R = 0;
-void getTransactionPath(vector<vector<int>> &dp, vector<int> &prices, int index, int buy, vector<int> &path, vector<vector<int>> &paths)
+void getTransactionPath(vector<vector<long>> &dp, vector<int> &prices, int index, int buy, vector<long> &path, vector<vector<long>> &paths)
 {
     if (index >= prices.size())
     {
@@ -14,8 +14,8 @@ void getTransactionPath(vector<vector<int>> &dp, vector<int> &prices, int index,
 
     if (buy)
     {
-        int BuyKaro = -prices[index] * K + dp[index + 1][0] - K * R;
-        int skipKaro = 0 + dp[index + 1][1];
+        long BuyKaro = -prices[index] * K + dp[index + 1][0] - K * R;
+        long skipKaro = 0 + dp[index + 1][1];
         if (BuyKaro >= skipKaro)
         {
             path.push_back(index);
@@ -29,8 +29,8 @@ void getTransactionPath(vector<vector<int>> &dp, vector<int> &prices, int index,
     }
     else
     {
-        int sellKaro = prices[index] * K + dp[index + 1][1];
-        int skipKaro = 0 + dp[index + 1][0];
+        long sellKaro = prices[index] * K + dp[index + 1][1];
+        long skipKaro = 0 + dp[index + 1][0];
         if (sellKaro >= skipKaro)
         {
             path.push_back(index);
@@ -44,35 +44,34 @@ void getTransactionPath(vector<vector<int>> &dp, vector<int> &prices, int index,
     }
 }
 
-vector<vector<int>> solvetab(vector<int> &prices)
+vector<vector<long>> solvetab(vector<int> &prices)
 {
     int n = prices.size();
 
-    vector<vector<int>> dp(n + 1, vector<int>(2, 0));
+    vector<vector<long>> dp(n + 1, vector<long>(2, 0));
 
     for (int index = n - 1; index >= 0; index--)
     {
         for (int buy = 0; buy <= 1; buy++)
         {
-            int profit = 0;
+            long profit = 0;
 
             if (buy)
             {
-                int BuyKaro = -prices[index] * K + dp[index + 1][0] - K * R;
-                int skipKaro = 0 + dp[index + 1][1];
+                long BuyKaro = -prices[index] * K + dp[index + 1][0] - K * R;
+                long skipKaro = 0 + dp[index + 1][1];
                 profit = max(BuyKaro, skipKaro);
             }
             else
             {
-                int sellKaro = prices[index] * K + dp[index + 1][1];
-                int skipKaro = 0 + dp[index + 1][0];
+                long sellKaro = prices[index] * K + dp[index + 1][1];
+                long skipKaro = 0 + dp[index + 1][0];
                 profit = max(sellKaro, skipKaro);
             }
             dp[index][buy] = profit;
         }
     }
-    vector<vector<int>> paths;
-    vector<int> path;
+
     /*    getTransactionPath(dp, prices, 0, 1, path, paths);
        for (auto &path : paths)
        {
@@ -103,22 +102,22 @@ int main()
         {
             cin >> prices[i];
         }
-        vector<vector<int>> dp(D + 1, vector<int>(2, 0));
+        vector<vector<long>> dp(D + 1, vector<long>(2, 0));
         dp = solvetab(prices);
         if (tipo == 1)
         {
-            printf("%d\n", dp[0][1]);
+            printf("%ld\n", dp[0][1]);
         }
         if (tipo == 2)
         {
-            vector<vector<int>> paths;
-            vector<int> path;
+            vector<vector<long>> paths;
+            vector<long> path;
             getTransactionPath(dp, prices, 0, 1, path, paths);
-            vector<int> v = paths[0];
+            vector<long> v = paths[0];
             int contador = 0;
             int valor = 0;
-            path = vector<int>(D, 0);
-            printf("%d\n", dp[0][1]);
+            path = vector<long>(D, 0);
+            printf("%ld\n", dp[0][1]);
             for (int i = 0; i < v.size(); i++)
             {
 
@@ -137,24 +136,24 @@ int main()
             {
                 if (i == path.size() - 1)
                 {
-                    printf("%d\n", path[i]);
+                    printf("%ld\n", path[i]);
                 }
                 else
                 {
-                    printf("%d ", path[i]);
+                    printf("%ld ", path[i]);
                 }
             }
         }
         if (tipo == 3)
         {
-            vector<vector<int>> paths;
-            vector<int> path;
+            vector<vector<long>> paths;
+            vector<long> path;
             getTransactionPath(dp, prices, 0, 1, path, paths);
-            vector<int> v = paths[0];
+            vector<long> v = paths[0];
             int contador = 0;
             int valor = 0;
-            path = vector<int>(D, 0);
-            printf("%d %lu\n", dp[0][1], paths.size());
+            path = vector<long>(D, 0);
+            printf("%ld %lu\n", dp[0][1], paths.size());
         }
     }
 
