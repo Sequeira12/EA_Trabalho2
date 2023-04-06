@@ -3,47 +3,58 @@
 
 using namespace std;
 int K = 0, R = 0;
-void getTransactionPath(vector<vector<vector<long>>> &dp, vector<int> &prices, int index, int buy, vector<long> &path, vector<vector<long>> &paths)
+void getTransactionPath(vector<vector<vector<long>>> &dp, vector<int> &prices, int index, int buy, int k, vector<long> &path, vector<vector<long>> &paths)
 {
     if (index >= prices.size())
     {
         paths.push_back(path);
 
+
+        // for(int i=0;i<paths.size();i++){
+        //     for (int j=0;j<paths[i].size();j++){
+        //         cout << paths[i][j] << " ";
+        //     }
+        //     cout << endl;
+        // }
+
+        // cout << endl << endl;
+
+        vector<long> p;
+        if(k!=K) getTransactionPath(dp, prices, 0, 1, k+1,p, paths);
         return;
     }
 
     if (buy)
     {
-        long BuyKaro = -prices[index] * K + dp[K][index + 1][0] - K * R;
-        long skipKaro = 0 + dp[K][index + 1][1];
+        long BuyKaro = -prices[index] * k + dp[k][index + 1][0] - k * R;
+        long skipKaro = 0 + dp[k][index + 1][1];
         if (BuyKaro >= skipKaro)
         {
             path.push_back(index);
-            getTransactionPath(dp, prices, index + 1, 0, path, paths);
+            getTransactionPath(dp, prices, index + 1, 0, k,path, paths);
             path.pop_back();
         }
         if (skipKaro >= BuyKaro)
         {
-            getTransactionPath(dp, prices, index + 1, 1, path, paths);
+            getTransactionPath(dp, prices, index + 1, 1, k,path, paths);
         }
     }
     else
     {
-        long sellKaro = prices[index] * K + dp[K][index + 1][1];
-        long skipKaro = 0 + dp[K][index + 1][0];
+        long sellKaro = prices[index] * k + dp[k][index + 1][1];
+        long skipKaro = 0 + dp[k][index + 1][0];
         if (sellKaro >= skipKaro)
         {
             path.push_back(index);
-            getTransactionPath(dp, prices, index + 1, 1, path, paths);
+            getTransactionPath(dp, prices, index + 1, 1,k, path, paths);
             path.pop_back();
         }
         if (skipKaro >= sellKaro)
         {
-            getTransactionPath(dp, prices, index + 1, 0, path, paths);
+            getTransactionPath(dp, prices, index + 1, 0,k, path, paths);
         }
     }
 }
-
  vector<vector<vector<long>>> solvetab(vector<int> &prices)
 {
     int n = prices.size();
@@ -117,7 +128,7 @@ int main()
         {
             vector<vector<long>> paths;
             vector<long> path;
-            getTransactionPath(dp, prices, 0, 1, path, paths);
+            getTransactionPath(dp, prices, 0, 1,3, path, paths);
             vector<long> v = paths[0];
             int contador = 0;
             int valor = 0;
@@ -153,12 +164,12 @@ int main()
         {
             vector<vector<long>> paths;
             vector<long> path;
-            getTransactionPath(dp, prices, 0, 1, path, paths);
+            getTransactionPath(dp, prices, 0, 1,3, path, paths);
             vector<long> v = paths[0];
             int contador = 0;
             int valor = 0;
             path = vector<long>(D, 0);
-            printf("%ld %lu\n", dp[0][0][1], paths.size());
+            printf("%ld %lu\n", dp[K][0][1], paths.size());
         }
     }
 
