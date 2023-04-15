@@ -5,103 +5,175 @@ using namespace std;
 int K = 0, R = 0, N = 0, D = 0;
 
 long best_profit;
-
-void count_paths(vector<int> &prices, int day, int socks, int transaction, vector<long> &path, int &contador_paths)
-{
-    if (day == D - 1)
-    {
-        if (transaction > 0 && transaction != 0 && transaction + socks > K)
-            return;
-        // venda invalida
-        if (transaction < 0 && transaction != 0 && socks < -1 * transaction)
-            return;
-
-        socks += transaction;
-        path[day] = transaction;
-
-        if (socks != 0)
-            return;
-
-        // calculamos o lucro
-        long profit = 0;
-        for (int p = 0; p < D; p++)
-        {
-            int num = abs(path[p]);
-            // venda
-            if (path[p] < 0)
-            {
-                profit += num * prices[p];
-            }
-
-            // compra
-            else if (path[p] > 0)
-            {
-                profit -= num * (prices[p] + R);
-            }
-        }
-        // cout << profit << endl;
-        if (profit == best_profit)
-        {
-            // for (int i=0;i<D;i++){
-            //     cout<< path[i] << " ";
-            // }
-            // cout << endl;
-
-            contador_paths += 1;
-
-            // cout << "find path" << endl;
-        }
-        path[day] = 0;
-        socks -= transaction;
+int MOD = 1e9 + 7;
+void count_p(int &count, vector<vector<vector<int>>> &aux, int visited, int day, vector<vector<int>> &dp) {
+    if (day == 0) {
+        count = (count+1) % MOD;
         return;
     }
-    else
-    {
-        // inicio
-        if (day == -1)
-        {
-            // testar não fazer nada
-            count_paths(prices, 0, socks, 0, path, contador_paths);
 
-            // testar comprar ou vender
-            for (int i = 1; i <= K; i++)
-            {
-                // comprar
-                count_paths(prices, 0, socks, i, path, contador_paths);
+    //ja foi calculado
+    if (dp[visited][day] != -1) {
+        count = (count + dp[visited][day]) % MOD;
+        return;
+    }
 
-                // vender
-                count_paths(prices, 0, socks, -1 * i, path, contador_paths);
+    int sub_count = 0;
+    for (int i = 0; i < aux[day][visited].size(); i++) {
+        count_p(sub_count, aux, aux[day][visited][i], day - 1, dp);
+    }
+    dp[visited][day] = sub_count;
+    count = (count + sub_count) %MOD;
+}
+void make_paths(vector<int> &prices, int &count){
+    //dp com dia/numero de açoes na carteira
+    vector<vector<long>> dp (D,vector<long>(K+1,0));
+    vector<vector<vector<int>>> aux;
+
+    int n=prices.size();
+
+    vector<vector<int>> day;
+    for(int k=0;k<=K;k++){
+        dp[0][k]=-prices[0]*k - k * R;
+        day.push_back({-1});
+    }
+    aux.push_back(day);
+
+    for (int i=1;i<D;i++){
+        vector<vector<int>> day;
+        for(int k=0;k<=K;k++){     //k=1
+            if(i==D-1 && k==1) break; 
+            vector<int> lucros_maximos;
+            long best=INT8_MIN;
+            for(int ka=0;ka<=K;ka++){ //o que tinhamos no dia anterior=
+                long profit;
+                //mantem
+                if(k-ka==0){ //dia anterior tinhamos 1 fi
+                    profit=dp[i-1][ka];
+                }
+
+                //venda
+                else if(k-ka<0){
+                    profit=dp[i-1][ka] + abs(k-ka) * prices[i];
+                }
+
+                //compra
+                else if(k-ka>0){
+                    profit=dp[i-1][ka] - (k-ka) * prices[i] - (k-ka)*R;
+                }
+
+                if(profit>best){
+                    best=profit;
+                    lucros_maximos.clear();
+                    lucros_maximos.push_back(ka);
+                }
+
+                else if (profit==best){
+                    lucros_maximos.push_back(ka);
+                }
+            }
+            
+            dp[i][k]=best;
+
+            day.push_back(lucros_maximos);
+        }
+        aux.push_back(day);
+    }
+
+    vector<vector<int>> dp_memo(K+1,vector<int>(D,-1));
+    count_p(count,aux,0,D-1,dp_memo);
+    printf("%ld %d\n", dp[D-1][0], count);
+}
+
+void count_paths(vector<int>&prices,int day,int socks,int transaction, vector <long>&path, int &contador_paths, int profit){
+    if(day==D-1){
+         if(transaction>0 && transaction!=0&& transaction+socks>K) return;
+        //venda invalida
+        if (transaction<0 && transaction!=0 && socks<-1*transaction) return;
+
+        socks+=transaction;
+        path[day]=transaction;
+
+        if(socks!=0) return;
+        
+        int num = abs(transaction);
+        //venda
+        if(transaction<0) profit+=num*prices[day];
+        //compra
+        else if (transaction>0) profit-=num*(prices[day]+R);
+    
+        // // //calculamos o lucro
+        // for (int i=0;i<D;i++){
+        //     cout<< path[i] << " ";
+        // }
+        // cout << endl;
+
+        if(profit==best_profit) {
+             for (int i=0;i<D;i++){
+            cout<< path[i] << " ";
+        }
+        cout << endl;
+            contador_paths+=1;
+        }
+
+        //     // cout << "find path" << endl;
+        // }
+        path[day]=0;
+        socks-=transaction;
+        return;
+    }
+    else {
+        //inicio
+        if(day==-1){
+            //testar não fazer nada
+            count_paths(prices,0,socks,0,path,contador_paths,profit);
+
+            //testar comprar ou vender
+            for (int i=1;i<=K;i++){
+                //comprar
+                count_paths(prices,0,socks,i,path,contador_paths,profit);
+
+                //vender
+                count_paths(prices,0,socks,-1*i,path,contador_paths,profit);
             }
         }
-        else
-        {
-            // compra invalida
-            if (transaction > 0 && transaction + socks > K)
-                return;
-            // venda invalida
-            if (transaction < 0 && socks < -1 * transaction)
-                return;
+        else{
+        //compra invalida 
+        if(transaction>0 && transaction+socks>K) return;
+        //venda invalida
+        if (transaction<0 && socks<-1*transaction) return;
 
-            // atualizar carteira
-            socks += transaction;
 
-            path[day] = transaction;
+        //atualizar carteira
+        socks+=transaction;
 
-            // testar não fazer nada
-            count_paths(prices, day + 1, socks, 0, path, contador_paths);
+        path[day]=transaction;
 
-            // testar comprar ou vender
-            for (int i = 1; i <= K; i++)
-            {
-                // comprar
-                count_paths(prices, day + 1, socks, i, path, contador_paths);
+        int num = abs(transaction);
+        //venda
+        if(transaction<0){
+            profit+=num*prices[day];
+        }
 
-                // vender
-                count_paths(prices, day + 1, socks, -1 * i, path, contador_paths);
+            //compra
+        else if (transaction>0) profit-=num*(prices[day]+R);
+
+        long best=0;
+                
+            //testar não fazer nada
+            count_paths(prices,day+1,socks,0,path,contador_paths,profit);
+
+            //testar comprar ou vender
+            for (int i=1;i<=K;i++){
+                //comprar
+                count_paths(prices,day+1,socks,i,path,contador_paths,profit);
+
+                //vender
+                count_paths(prices,day+1,socks,-1*i,path,contador_paths,profit);
             }
 
-            path[day] = 0;
-            socks -= transaction;
+        path[day]=0;
+        socks-=transaction;
         }
     }
 }
@@ -176,18 +248,6 @@ vector<vector<long>> solvetab(vector<int> &prices)
 
     return dp;
 }
-/*    getTransactionPath(dp, prices, 0, 1, path, paths);
-   for (auto &path : paths)
-   {
-       cout << "Transaction path: ";
-       for (auto &index : path)
-       {
-           cout << index << " ";
-       }
-       cout << endl;
-   } */
-
-// return dp;
 
 int main()
 {
@@ -206,14 +266,16 @@ int main()
             cin >> prices[i];
         }
         vector<vector<long>> dp(D + 1, vector<long>(2, 0));
-        dp = solvetab(prices);
-        best_profit = dp[0][1];
         if (tipo == 1)
         {
+            dp = solvetab(prices);
+            best_profit = dp[0][1];
             printf("%ld\n", dp[0][1]);
         }
         if (tipo == 2)
         {
+            dp = solvetab(prices);
+            best_profit = dp[0][1];
             vector<vector<long>> paths;
             vector<long> path;
             getTransactionPath(dp, prices, 0, 1, path, paths);
@@ -250,18 +312,10 @@ int main()
         }
         if (tipo == 3)
         {
-            // vector<vector<long>> paths;
-            // vector<long> path;
-            // //getTransactionPath(dp, prices, 0, 1,3, path, paths);
-            // vector<long> v = paths[0];
-            // int contador = 0;
-            // int valor = 0;
             int count = 0;
             vector<long> path(D, 0);
-            count_paths(prices, -1, 0, 0, path, count);
-            printf("%ld %d\n", dp[0][1], count);
+            make_paths(prices,count);
         }
     }
-
     return 0;
 }
